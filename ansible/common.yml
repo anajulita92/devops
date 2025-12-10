@@ -1,0 +1,4 @@
+- name: Configuração comum para todas as VMs
+  hosts: all
+  become: yes
+
