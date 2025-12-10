@@ -1,0 +1,38 @@
+# Informacoes da equipe
+team_members:
+  - name: ana
+    registration: 20241380031
+  - name: anderson
+    registration: 20241380008
+
+first_names: "ana.anderson"
+domain: "ana.anderson.devops"
+
+# Configuracoes de rede
+network: "192.168.56.0/24"
+gateway: "192.168.56.1"
+netmask: "255.255.255.0"
+broadcast: "192.168.56.255"
+
+# IPs Estaticos
+ip_arq: "192.168.56.131"
+ip_db: "192.168.56.108"
+ip_app: "192.168.56.138"
+ip_cli: "192.168.56.50"
+
+# Configuracoes DHCP
+dhcp_range_start: 50
+dhcp_range_end: 100
+dhcp_default_lease_time: 180
+dhcp_max_lease_time: 3600
+
+dhcp_reservations:
+  db:
+    mac: "0800273A0001"
+    ip: "{{ ip_db }}"
+  app:
+    mac: "0800273A0002"
+    ip: "{{ ip_app }}"
+  cli:
+    mac: " "
+    ip: "{{ ip_cli }}"

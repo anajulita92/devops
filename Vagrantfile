@@ -27,12 +27,12 @@ Vagrant.configure("2") do |config|
   config.vm.define "arq" do |arq|
     arq.vm.hostname = "arq.ana.anderson.devops"
     arq.vm.network :private_network, ip: "192.168.56.131" # Atribuir IP fixo na rede privada
-    (0..2).each do |x| # Criar discos
+    (1..3).each do |x| # Criar discos
        arq.vm.disk :disk, size: "10GB", name: "disk-#{x}"
     end
     arq.vm.provision "ansible" do |ansible| # Provisionamento Ansible
       ansible.compatibility_mode = "2.0"
-      ansible.playbook = "playbooks/conf-arq.yml" # Playbook especifico para o servidor de arquivos
+      ansible.playbook = "playbooks/arq.yml" # Playbook especifico para o servidor de arquivos
     end
   end
 
@@ -42,7 +42,7 @@ Vagrant.configure("2") do |config|
     db.vm.network :private_network, mac: "0800273A0001", type: "dhcp" 
     db.vm.provision "ansible" do |ansible| # Provisionamento Ansible
       ansible.compatibility_mode = "2.0"
-      ansible.playbook = "playbooks/conf-db.yml" # Playbook especifico para o banco de dados
+      ansible.playbook = "playbooks/db.yml" # Playbook especifico para o banco de dados
     end
   end
 
@@ -52,14 +52,14 @@ Vagrant.configure("2") do |config|
     app.vm.network :private_network, mac: "0800273A0002", type: "dhcp"
     app.vm.provision "ansible" do |ansible| # Provisionamento Ansible
       ansible.compatibility_mode = "2.0"
-      ansible.playbook = "playbooks/conf-app.yml" # Playbook especifico para o servidor de aplicacao
+      ansible.playbook = "playbooks/app.yml" # Playbook especifico para o servidor de aplicacao
     end
   end
 
 # Host cliente [cli]
   config.vm.define "cli" do |cli|
     cli.vm.hostname = "cli.ana.anderson.devops"
-    cli.vm.network :private_network, type: "dhcp"
+    cli.vm.network :private_network, mac: "0800273A0003" type: "dhcp"
     
     cli.vm.provider 'virtualbox' do |vb|
       vb.memory = 1024 # Sobrescrever a configuracao global
@@ -67,7 +67,7 @@ Vagrant.configure("2") do |config|
 
     cli.vm.provision "ansible" do |ansible| # Provisionamento Ansible
       ansible.compatibility_mode = "2.0"
-      ansible.playbook = "playbooks/conf-cli.yml" # Playbook especifico para o host cliente
+      ansible.playbook = "playbooks/cli.yml" # Playbook especifico para o host cliente
     end
   end
 end
