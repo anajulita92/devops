@@ -1,1 +1,115 @@
+# Atualização do sistema operacional
 
+- name: Atualizar cache do apt
+  apt:
+    update_cache: yes
+- name: Upgrade do sistema
+  apt:
+    upgrade: yes
+
+# 2: NTP (Chrony) e Timezone
+
+- name: Instalar chrony
+  apt:
+    name: chrony
+    state: present
+- name: Configurar chrony (pool.ntp.br)
+  lineinfile:
+    path: /etc/chrony/chrony.conf
+    regexp: '^pool (.*)'
+    line: 'pool pool.ntp.br iburst'
+    state: present
+    backrefs: yes
+  notify: restart chrony
+- name: Ajustar timezone
+  timezone:
+    name: America/Recife
+
+# 3 Usuários e grupos 
+
+- name: Criar grupo ifpb
+  group:
+    name: ifpb
+    state: present
+- name: Criar usuario ana e adicionar ao grupo ifpb
+  user:
+    name: ana
+    groups: ifpb, vagrant
+    append: yes
+    shell: /bin/bash # Shell padrão para ana e anderson
+- name: Criar usuario anderson e adicionar ao grupo ifpb
+  user:
+    name: anderson
+    groups: ifpb, vagrant
+    append: yes
+    shell: /bin/bash
+
+# 4 Configuração de SUDO para ifpb
+
+- name: Permitir que usuarios do grupo ifpb usem sudo sem senha
+  lineinfile:
+    path: /etc/sudoers.d/ifpb-sudo
+    line: '%ifpb ALL=(ALL) NOPASSWD: ALL'
+    create: yes
+    validate: 'visudo -cf %s'
+
+# 5 Configurações do SSH
+
+- name: Configurar SSH para permitir apenas autenticacao por chaves
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+    state: present
+  notify: restart sshd
+- name: Bloquear acesso ao usuario root via SSH
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: 'PermitRootLogin no'
+    state: present
+  notify: restart sshd
+- name: Permitir acesso apenas a grupos vagrant e ifpb
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^AllowGroups'
+    line: 'AllowGroups vagrant ifpb'
+    state: present
+  notify: restart sshd
+
+  #5.1 - Mensagem de Saudação (/etc/issue.net)
+  
+  name: Configurar Banner de saudacao SSH
+  blockinfile:
+    path: /etc/issue.net
+    block: |
+      Acesso apenas para pessoas com autorizacao expressa!!!
+    create: yes
+- name: Ativar Banner SSH
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?Banner'
+    line: 'Banner /etc/issue.net'
+    state: present
+  notify: restart sshd
+
+  #5.2 Geração e Configuração de Chaves:
+
+  - name: Gerar e configurar chaves publicas para ana (Assumindo que a chave ja existe localmente)
+  authorized_key:
+    user: ana
+    state: present
+    key: "{{ lookup('file', '/caminho/local/para/id_rsa_ana.pub') }}"
+- name: Gerar e configurar chaves publicas para anderson
+  authorized_key:
+    user: anderson
+    state: present
+    key: "{{ lookup('file', '/caminho/local/para/id_rsa_anderson.pub') }}"
+
+
+  # 6 Instalação do cliente NFS
+
+  - name: Instalar cliente NFS (nfs-common)
+  apt:
+    name: nfs-common
+    state: present
