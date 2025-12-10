@@ -1,0 +1,94 @@
+---
+# Substitua pelos seus dados
+nome1: ana
+nome2: anderson
+xx: 45
+yy: 67
+xy: 78 # Exemplo de dois ultimos digitos concatenados
+ip_arq: 192.168.56.145
+ip_db_estatico: 192.168.56.167
+ip_app_estatico: 192.168.56.178
+mac_db: 08:00:27:DE:AD:BE
+mac_app: 08:00:27:BE:EF:CA
+dominio: "{{ nome1 }}.{{ nome2 }}.devops"
+
+# 2 Tarefas do DHCP
+
+---
+# Assegure-se de que o grupo e as variaveis estao definidas
+
+- name: Instalar isc-dhcp-server
+  ansible.builtin.apt:
+    name: isc-dhcp-server
+    state: present
+
+# --- Configuracao do /etc/dhcp/dhcpd.conf ---
+
+- name: Adicionar configuracao global autoritativa e tempos de lease (dhcpd.conf)
+  ansible.builtin.blockinfile:
+    path: /etc/dhcp/dhcpd.conf
+    block: |
+      # Configuracao padrao
+      ddns-update-style none;
+      authoritative;
+      default-lease-time 180;
+      max-lease-time 3600;
+    insertbefore: BOF
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - DHCP GLOBAL CONFIG"
+  notify: restart isc-dhcp-server
+
+- name: Configurar sub-rede DHCP com escopo dinamico e opcoes
+  ansible.builtin.blockinfile:
+    path: /etc/dhcp/dhcpd.conf
+    block: |
+      subnet 192.168.56.0 netmask 255.255.255.0 {
+          range 192.168.56.50 192.168.56.100;
+          option routers 192.168.56.1;
+          option domain-name "{{ dominio }}";
+          option domain-name-servers {{ ip_arq }}, 1.1.1.1, 8.8.8.8;
+      }
+    insertafter: "max-lease-time 3600;" # Posicionamento apos config global
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - DHCP SUBNET CONFIG"
+  notify: restart isc-dhcp-server
+
+- name: Adicionar configuracao estatica para Servidor DB (db)
+  ansible.builtin.blockinfile:
+    path: /etc/dhcp/dhcpd.conf
+    block: |
+      host db {
+          hardware ethernet {{ mac_db }};
+          fixed-address {{ ip_db_estatico }};
+      }
+    insertafter: "subnet 192.168.56.0 netmask 255.255.255.0 {"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - HOST DB STATIC"
+  notify: restart isc-dhcp-server
+
+- name: Adicionar configuracao estatica para Servidor APP (app)
+  ansible.builtin.blockinfile:
+    path: /etc/dhcp/dhcpd.conf
+    block: |
+      host app {
+          hardware ethernet {{ mac_app }};
+          fixed-address {{ ip_app_estatico }};
+      }
+    insertafter: "# {mark} ANSIBLE MANAGED BLOCK - HOST DB STATIC"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - HOST APP STATIC"
+  notify: restart isc-dhcp-server
+
+# --- Configuracao do /etc/default/isc-dhcp-server ---
+
+- name: Configurar interface de escuta do DHCP (INTERFACESv4)
+  ansible.builtin.lineinfile:
+    path: /etc/default/isc-dhcp-server
+    regexp: '^INTERFACESv4='
+    line: 'INTERFACESv4="eth1"' # Assume-se que a rede privada do Vagrant e' eth1
+    state: present
+  notify: restart isc-dhcp-server
+
+# 3 Handler para iniciar o serviço
+
+---
+- name: restart isc-dhcp-server
+  ansible.builtin.service:
+    name: isc-dhcp-server
+    state: restarted
