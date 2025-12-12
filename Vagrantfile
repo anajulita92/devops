@@ -13,11 +13,9 @@ Vagrant.configure("2") do |config|
   config.ssh.insert_key = false
 
 # Criar gatilho para desabilitar DHCP do VirtualBox
-  config.trigger.before :up do |trigger|
-    trigger.info = "Desabilitando servidor DHCP do VirtualBox"
-    trigger.run = {
-      inline: "VBoxManage dhcpserver remove --netname HostInterfaceNetworking-vboxnet0 || true"
-    }
+  config.trigger.before :"Vagrant::Action::Builtin::WaitForCommunicator", type: :action do |t|
+    t.warn = "Desabilitando servidor DHCP do VirtualBox"
+    t.run = {inline: "VBoxManage dhcpserver stop --interface vboxnet0"}
   end
 
  # Desabilitar verificação/atualização automática do Guest Additions
