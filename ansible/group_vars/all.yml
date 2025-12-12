@@ -1,0 +1,4 @@
+# Informações básicas para todas as VMs
+admin_group: "ifpb"
+timezone: "America/Recife"
+ntp_server: "pool.ntp.br"

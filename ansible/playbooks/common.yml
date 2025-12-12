@@ -1,0 +1,159 @@
+
+- name: Configurações comuns para todas as VMs
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Atualizar cache de pacotes APT
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Executar upgrade do sistema
+      apt:
+        upgrade: dist
+        update_cache: yes
+
+   
+    - name: Instalar pacote chrony
+      apt:
+        name: chrony
+        state: present
+
+    - name: Configurar chrony para usar pool.ntp.br
+      lineinfile:
+        path: /etc/chrony/chrony.conf
+        regexp: '^pool '
+        line: 'pool pool.ntp.br iburst'
+        state: present
+      notify: restart chrony
+
+    
+    - name: Configurar timezone para America/Recife
+      timezone:
+        name: America/Recife
+
+    
+    - name: Criar grupo ifpb
+      group:
+        name: ifpb
+        state: present
+
+    
+    - name: Criar usuário ana
+      user:
+        name: ana
+        groups: "ifpb,vagrant"
+        shell: /bin/bash
+        create_home: yes
+
+    - name: Criar usuário anderson
+      user:
+        name: anderson
+        groups: "ifpb,vagrant"
+        shell: /bin/bash
+        create_home: yes
+
+    - name: Criar diretório .ssh para ana
+      file:
+        path: /home/ana/.ssh
+        state: directory
+        mode: '0700'
+        owner: ana
+        group: ana
+
+    - name: Criar diretório .ssh para anderson
+      file:
+        path: /home/anderson/.ssh
+        state: directory
+        mode: '0700'
+        owner: anderson
+        group: anderson
+
+    - name: Gerar chave SSH para usuário ana
+      user:
+        name: ana
+        generate_ssh_key: yes
+        ssh_key_bits: 2048
+        ssh_key_file: ".ssh/id_rsa"
+
+    - name: Gerar chave SSH para usuário anderson
+      user:
+        name: anderson
+        generate_ssh_key: yes
+        ssh_key_bits: 2048
+        ssh_key_file: ".ssh/id_rsa"
+ 
+    - name: Configurar SSH para permitir apenas autenticação por chaves
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+      notify: restart sshd
+
+    - name: Configurar SSH para bloquear acesso root
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+      notify: restart sshd
+
+    - name: Configurar SSH para permitir apenas grupos vagrant e ifpb
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?AllowGroups'
+        line: 'AllowGroups vagrant ifpb'
+        state: present
+      notify: restart sshd
+ 
+    - name: Criar arquivo de banner SSH
+      copy:
+        content: |
+          ===========================================
+          BEM-VINDO AO SERVIDOR
+          ===========================================
+          Acesso apenas para pessoas com autorização expressa!!!
+          
+          Equipe: Ana (20241380031) e Anderson (20241380008)
+          Projeto: DevOps com Vagrant e Ansible
+          ===========================================
+        dest: /etc/issue.net
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Configurar SSH para exibir banner
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?Banner'
+        line: 'Banner /etc/issue.net'
+        state: present
+      notify: restart sshd
+
+
+    - name: Instalar cliente NFS (nfs-common)
+      apt:
+        name: nfs-common
+        state: present
+
+    
+    - name: Criar arquivo de configuração sudo para grupo ifpb
+      copy:
+        content: |
+          # Permissão para grupo ifpb executar comandos como root
+          %ifpb ALL=(ALL) NOPASSWD: ALL
+        dest: /etc/sudoers.d/ifpb
+        mode: '0440'
+
+  handlers:
+    - name: restart chrony
+      service:
+        name: chrony
+        state: restarted
+
+    - name: restart sshd
+      service:
+        name: ssh
+        state: restarted

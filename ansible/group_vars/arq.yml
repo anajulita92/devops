@@ -1,0 +1,21 @@
+## Configurações específicas para o servidor de arquivos [arq]
+
+# Reservas DHCP estáticas por MAC
+dhcp_static_reservations:
+  - name: "db"
+    mac: "08:00:27:00:00:01"
+    ip: "192.168.56.108"
+  - name: "app"
+    mac: "08:00:27:00:00:02"
+    ip: "192.168.56.138"
+
+# Configurações LVM
+lvm_volume_group: "dados"
+lvm_logical_volume: "ifpb"
+lvm_size: "15G"
+lvm_mount_point: "/dados"
+
+# Configurações NFS
+nfs_share_path: "/dados/nfs"
+nfs_user: "nfs-ifpb"
+nfs_allowed_network: "192.168.56.0/24"
