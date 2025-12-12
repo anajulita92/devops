@@ -1,0 +1,82 @@
+# Todos os hosts
+all:
+  hosts:
+    arq.ana.anderson.devops:
+      ansible_host: 192.168.56.131
+      ansible_user: vagrant
+      ansible_ssh_private_key_file: .vagrant/machines/arq/virtualbox/private_key
+      host_type: arq
+      # O arq tem IP estático configurado no Vagrantfile
+    
+    db.ana.anderson.devops:
+      ansible_host: 192.168.56.108
+      ansible_user: vagrant
+      ansible_ssh_private_key_file: .vagrant/machines/db/virtualbox/private_key
+      host_type: db
+      # IP reservado via DHCP estático (MAC: 080027000001)
+    
+    app.ana.anderson.devops:
+      ansible_host: 192.168.56.138
+      ansible_user: vagrant
+      ansible_ssh_private_key_file: .vagrant/machines/app/virtualbox/private_key
+      host_type: app
+      # IP reservado via DHCP estático (MAC: 080027000002)
+    
+    cli.ana.anderson.devops:
+      # O cli recebe IP dinâmico via DHCP
+      # Usamos um IP provável (dentro da faixa 50-100)
+      ansible_host: 192.168.56.50
+      ansible_user: vagrant
+      ansible_ssh_private_key_file: .vagrant/machines/cli/virtualbox/private_key
+      host_type: cli
+  
+  # Grupos de hosts
+  children:
+    # Grupo para todas as máquinas
+    all_machines:
+      hosts:
+        arq.ana.anderson.devops:
+        db.ana.anderson.devops:
+        app.ana.anderson.devops:
+        cli.ana.anderson.devops:
+    
+    # Grupo do servidor de arquivos
+    arq:
+      hosts:
+        arq.ana.anderson.devops:
+    
+    # Grupo do servidor de banco de dados
+    db:
+      hosts:
+        db.ana.anderson.devops:
+    
+    # Grupo do servidor de aplicação
+    app:
+      hosts:
+        app.ana.anderson.devops:
+    
+    # Grupo do host cliente
+    cli:
+      hosts:
+        cli.ana.anderson.devops:
+    
+    # Grupo para servidores (todos exceto cli)
+    servidores:
+      hosts:
+        arq.ana.anderson.devops:
+        db.ana.anderson.devops:
+        app.ana.anderson.devops:
+    
+    # Grupo para clientes
+    clientes:
+      hosts:
+        cli.ana.anderson.devops:
+
+# Variáveis que podem ser usadas em todos os hosts
+# (mais específicas em group_vars/)
+all:
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    domain_name: "ana.anderson.devops"
+    network_cidr: "192.168.56.0/24"
+    network_gateway: "192.168.56.1"

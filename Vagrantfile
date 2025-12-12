@@ -40,127 +40,104 @@ Vagrant.configure("2") do |config|
   end
 
 
+## Playbook com configurações comuns (executa em todas as VMs):
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.compatibility_mode = "2.0"
+    ansible.playbook = "ansible/playbooks/common.yml"
+    ansible.groups = {
+      "all" => ["arq", "db", "app", "cli"]
+    }
+  end
+
+
 ## Configurações do servidor de arquivos [arq]:
 
-# Hostname
-# Endereço IP estático
-# Discos adicionais
+# Definir hostname
+# Configurar endereço IP estático
+# Criar 3 discos adicionais de 10 GB usando vm.disk
 
     config.vm.define "arq" do |arq|
       arq.vm.hostname = "arq.ana.anderson.devops"
       arq.vm.network :private_network, ip: "192.168.56.131"
-      arq.vm.provider "virtualbox" do |vb|
-        (1..3).each do |i|
-          disk_filename = "arq-disk#{i}.vdi"
-          vb.customize ['createhd', '--filename', disk_filename, '--size', 10 * 1024]
-          vb.customize ['storageattach', :id, 
-                     '--storagectl', 'SATA Controller',
-                     '--port', i + 1,
-                     '--device', 0,
-                     '--type', 'hdd',
-                     '--medium', disk_filename]
-        end
+      
+      (1..3).each do |i|
+        arq.vm.disk :disk, size: "10GB", name: "arq-disk-#{i}"
+      end
+
+# Configurar DHCP e DNS no servidor de arquivos
+      
+      arq.vm.provision "ansible" do |ansible|
+        ansible.compatibility_mode = "2.0"
+        ansible.playbook = "ansible/playbooks/arq-dhcp-dns.yml"
+      end
+    
+# Configurar LVM e NFS no servidor de arquivos
+      arq.vm.provision "ansible" do |ansible|
+        ansible.compatibility_mode = "2.0"
+        ansible.playbook = "ansible/playbooks/arq-lvm-nfs.yml"
       end
     end
 
 ## Configurações do servidor de banco de dados [db]:
 
-# Hostname
-# Endereço IP via DHCP com atribuição estática baseada no MAC
+# Definir hostname
+# Configurar rede para obter IP via DHCP com reserva por MAC
+# Configurar MAC address para reserva estática
 
-   config.vm.define "db" do |db|
+  config.vm.define "db" do |db|
     db.vm.hostname = "db.ana.anderson.devops"
-    db.vm.network :private_network, 
+    db.vm.network :private_network,
       type: "dhcp",
-      mac: "080027000001"  
+      mac: "080027000001"
+    
+# Configurar MariaDB e NFS no servidor de banco de dados
+    db.vm.provision "ansible" do |ansible|
+      ansible.compatibility_mode = "2.0"
+      ansible.playbook = "ansible/playbooks/db.yml"
+    end
   end
+
 
 ## Configurações do servidor de aplicação [app]:
 
-# Hostname
-# Endereço IP via DHCP com atribuição estática baseada no MAC
+# Definir hostname
+# Configurar rede para obter IP via DHCP com reserva por MAC
+# Configurar MAC address para reserva estática
 
   config.vm.define "app" do |app|
     app.vm.hostname = "app.ana.anderson.devops"
-    app.vm.network :private_network, 
+    app.vm.network :private_network,
       type: "dhcp",
-      mac: "080027000002"  
+      mac: "080027000002"
+    
+# Configurar Apache e NFS no servidor de aplicação
+    app.vm.provision "ansible" do |ansible|
+      ansible.compatibility_mode = "2.0"
+      ansible.playbook = "ansible/playbooks/app.yml"
+    end
   end
 
 
 ## Configurações do host cliente [cli]:
 
-# Hostname
-# Endereço IP via DHCP (dinâmico, sem reserva)
-# Configuração da VM: Memória RAM: 1024 MB
+# Definir hostname
+# Configurar rede para obter IP via DHCP (dinâmico)
+# Aumentar memória RAM para 1024 MB
 
   config.vm.define "cli" do |cli|
     cli.vm.hostname = "cli.ana.anderson.devops"
     cli.vm.network :private_network, type: "dhcp"
+    
+    
     cli.vm.provider "virtualbox" do |vb|
-      vb.memory = 1024  
+      vb.memory = 1024
     end
-  end
-
-
-## Configuração do provisionamento Ansible:
-
-# Executar playbook comum em todas as VMs
-  config.vm.provision "ansible" do |ansible|
-    ansible.compatibility_mode = "2.0"
-    ansible.playbook = "ansible/playbooks/common.yml"
-    ansible.inventory_path = "ansible/inventory.yml"
-    ansible.become = true
-    ansible.limit = "all"  
-    ansible.verbose = "v"
-  end
-
-# Executar playbooks específicos para o servidor de arquivos
-  config.vm.provision "ansible" do |ansible|
-    ansible.compatibility_mode = "2.0"
-    ansible.playbook = "ansible/playbooks/arq-dhcp-dns.yml"
-    ansible.inventory_path = "ansible/inventory.yml"
-    ansible.become = true
-    ansible.limit = "arq"  
-    ansible.verbose = "v"
-  end
-
-  config.vm.provision "ansible" do |ansible|
-    ansible.compatibility_mode = "2.0"
-    ansible.playbook = "ansible/playbooks/arq-lvm-nfs.yml"
-    ansible.inventory_path = "ansible/inventory.yml"
-    ansible.become = true
-    ansible.limit = "arq"  
-    ansible.verbose = "v"
-  end
-
-# Executar playbook para o servidor de banco de dados
-  config.vm.provision "ansible" do |ansible|
-    ansible.compatibility_mode = "2.0"
-    ansible.playbook = "ansible/playbooks/db.yml"
-    ansible.inventory_path = "ansible/inventory.yml"
-    ansible.become = true
-    ansible.limit = "db"  
-    ansible.verbose = "v"
-  end
-
-# Executar playbook para o servidor de aplicação
-  config.vm.provision "ansible" do |ansible|
-    ansible.compatibility_mode = "2.0"
-    ansible.playbook = "ansible/playbooks/app.yml"
-    ansible.inventory_path = "ansible/inventory.yml"
-    ansible.become = true
-    ansible.limit = "app" 
-    ansible.verbose = "v"
-  end
-
-# Executar playbook para o host cliente
-  config.vm.provision "ansible" do |ansible|
-    ansible.compatibility_mode = "2.0"
-    ansible.playbook = "ansible/playbooks/cli.yml"
-    ansible.inventory_path = "ansible/inventory.yml"
-    ansible.become = true
-    ansible.limit = "cli" 
-    ansible.verbose = "v"
+    
+# Configurar Firefox, X11 e NFS no host cliente
+    cli.vm.provision "ansible" do |ansible|
+      ansible.compatibility_mode = "2.0"
+      ansible.playbook = "ansible/playbooks/cli.yml"
+    end
   end
 end
