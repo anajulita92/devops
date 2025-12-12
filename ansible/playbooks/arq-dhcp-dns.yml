@@ -1,0 +1,75 @@
+
+- name: Configurar servidor DHCP e DNS no arq
+  hosts: arq
+  become: yes
+
+  tasks:
+    - name: Instalar servidor DHCP (isc-dhcp-server)
+      apt:
+        name: isc-dhcp-server
+        state: present
+    
+    - name: Configurar arquivo dhcpd.conf
+      template:
+        src: dhcpd.conf.j2
+        dest: /etc/dhcp/dhcpd.conf
+      notify: restart isc-dhcp-server
+    
+    - name: Configurar interface para serviço DHCP
+      lineinfile:
+        path: /etc/default/isc-dhcp-server
+        regexp: '^INTERFACESv4='
+        line: 'INTERFACESv4="eth1"'
+      notify: restart isc-dhcp-server
+       
+    - name: Instalar servidor DNS (bind9)
+      apt:
+        name: bind9
+        state: present
+    
+    - name: Configurar opções do DNS
+      template:
+        src: named.conf.options.j2
+        dest: /etc/bind/named.conf.options
+      notify: restart bind9
+    
+    - name: Configurar zonas DNS
+      template:
+        src: named.conf.local.j2
+        dest: /etc/bind/named.conf.local
+      notify: restart bind9
+    
+    - name: Configurar zona direta do domínio
+      template:
+        src: zona-direta.j2
+        dest: /etc/bind/db.ana.anderson.devops
+      notify: restart bind9
+    
+    - name: Configurar zona reversa
+      template:
+        src: zona-reversa.j2
+        dest: /etc/bind/db.56.168.192
+      notify: restart bind9
+    
+    - name: Habilitar e iniciar servidor DHCP
+      service:
+        name: isc-dhcp-server
+        enabled: yes
+        state: started
+    
+    - name: Habilitar e iniciar servidor DNS
+      service:
+        name: bind9
+        enabled: yes
+        state: started
+
+  handlers:
+    - name: restart isc-dhcp-server
+      service:
+        name: isc-dhcp-server
+        state: restarted
+    
+    - name: restart bind9
+      service:
+        name: bind9
+        state: restarted

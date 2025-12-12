@@ -1,0 +1,27 @@
+
+options {
+    directory "/var/cache/bind";
+    
+    // Permitir recursão para rede interna
+    recursion yes;
+    allow-recursion { 192.168.56.0/24; localhost; };
+    
+    // Forwarders para DNS externos
+    forwarders {
+        1.1.1.1;
+        8.8.8.8;
+    };
+    
+    // Configurações DNSSEC
+    dnssec-validation auto;
+    
+    // Escutar em todas as interfaces IPv4
+    listen-on { any; };
+    
+    // Desabilitar IPv6
+    listen-on-v6 { none; };
+    
+    // Permitir consultas da rede interna
+    allow-query { 192.168.56.0/24; localhost; };
+};
+

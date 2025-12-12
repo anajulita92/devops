@@ -1,0 +1,13 @@
+
+// Zona direta para o domínio ana.anderson.devops
+zone "ana.anderson.devops" {
+    type master;
+    file "/etc/bind/db.ana.anderson.devops";
+};
+
+// Zona reversa para a rede 192.168.56.0/24
+zone "56.168.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/db.56.168.192";
+};
+
