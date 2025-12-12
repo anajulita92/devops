@@ -1,74 +1,166 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Configurações globais das VMs:
+## Configurações globais das VMs:
+
+# Definir o provider como VirtualBox
+# Definir a imagem base como debian/bookworm64
+# Desativar a geração automática de chaves ssh pelo Vagrant
 
 Vagrant.configure("2") do |config|
-    config.vm.box = 'debian/bookworm64' # Box
-  config.ssh.insert_key = false # Desativar geracao de chaves ssh
-  if Vagrant.has_plugin?("vagrant-vbguest") # Verificar se o plugin esta instalado
-    config.vbguest.auto_update = false # Desativar as atualizacoes automaticas
+  config.vm.provider 'virtualbox'
+  config.vm.box = 'debian/bookworm64'
+  config.ssh.insert_key = false
+
+# Criar gatilho para desabilitar DHCP do VirtualBox
+  config.trigger.before :up do |trigger|
+    trigger.info = "Desabilitando servidor DHCP do VirtualBox"
+    trigger.run = {
+      inline: "VBoxManage dhcpserver remove --netname HostInterfaceNetworking-vboxnet0 || true"
+    }
+  end
+
+ # Desabilitar verificação/atualização automática do Guest Additions
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    config.vbguest.auto_update = false
   end
   
-  # Desabilitar servidor DHCP do virtualbox antes de iniciar as VMs:
-  config.trigger.before :"Vagrant::Action::Builtin::WaitForCommunicator", type: :action do |t|
-    t.warn = "Interrompe o servidor dhcp do virtualbox"
-    t.run = {inline: "vboxmanage dhcpserver stop --interface vboxnet0"}
-  end
+
   
-  # Configuracoes do provider para todas as VMs:
+## Configurações do provider para todas as VMs:
+ 
+# Definir memória RAM de 512 MB para todas as VMs (será sobrescrito para cli)
+# Habilitar clones vinculados para economizar espaço em disco
+# Desabilitar verificação/atualização automática do Guest Additions
+
   config.vm.provider 'virtualbox' do |v|
-    v.gui = false # Iniciar as VMs sem interface grafica
-    v.memory = '512' # Memoria RAM
-    v.linked_clone = true # Criar clones vinculados
-    v.check_guest_additions = false # Desativar verificacao das guest additions
+    v.memory = '512'
+    v.linked_clone = true
+    v.check_guest_additions = false
   end
 
-# Servidor de arquivos [arq]
-  config.vm.define "arq" do |arq|
-    arq.vm.hostname = "arq.ana.anderson.devops"
-    arq.vm.network :private_network, ip: "192.168.56.131" # Atribuir IP fixo na rede privada
-    (1..3).each do |x| # Criar discos
-       arq.vm.disk :disk, size: "10GB", name: "disk-#{x}"
-    end
-    arq.vm.provision "ansible" do |ansible| # Provisionamento Ansible
-      ansible.compatibility_mode = "2.0"
-      ansible.playbook = "playbooks/arq.yml" # Playbook especifico para o servidor de arquivos
-    end
-  end
 
-# Servidor de banco de dados [db]
-  config.vm.define "db" do |db|
+## Configurações do servidor de arquivos [arq]:
+
+# Hostname
+# Endereço IP estático
+# Discos adicionais
+
+    config.vm.define "arq" do |arq|
+      arq.vm.hostname = "arq.ana.anderson.devops"
+      arq.vm.network :private_network, ip: "192.168.56.131"
+      arq.vm.provider "virtualbox" do |vb|
+        (1..3).each do |i|
+          disk_filename = "arq-disk#{i}.vdi"
+          vb.customize ['createhd', '--filename', disk_filename, '--size', 10 * 1024]
+          vb.customize ['storageattach', :id, 
+                     '--storagectl', 'SATA Controller',
+                     '--port', i + 1,
+                     '--device', 0,
+                     '--type', 'hdd',
+                     '--medium', disk_filename]
+        end
+      end
+    end
+
+## Configurações do servidor de banco de dados [db]:
+
+# Hostname
+# Endereço IP via DHCP com atribuição estática baseada no MAC
+
+   config.vm.define "db" do |db|
     db.vm.hostname = "db.ana.anderson.devops"
-    db.vm.network :private_network, mac: "0800273A0001", type: "dhcp" 
-    db.vm.provision "ansible" do |ansible| # Provisionamento Ansible
-      ansible.compatibility_mode = "2.0"
-      ansible.playbook = "playbooks/db.yml" # Playbook especifico para o banco de dados
-    end
+    db.vm.network :private_network, 
+      type: "dhcp",
+      mac: "080027000001"  
   end
 
-# Servidor de aplicacao [app]
+## Configurações do servidor de aplicação [app]:
+
+# Hostname
+# Endereço IP via DHCP com atribuição estática baseada no MAC
+
   config.vm.define "app" do |app|
     app.vm.hostname = "app.ana.anderson.devops"
-    app.vm.network :private_network, mac: "0800273A0002", type: "dhcp"
-    app.vm.provision "ansible" do |ansible| # Provisionamento Ansible
-      ansible.compatibility_mode = "2.0"
-      ansible.playbook = "playbooks/app.yml" # Playbook especifico para o servidor de aplicacao
+    app.vm.network :private_network, 
+      type: "dhcp",
+      mac: "080027000002"  
+  end
+
+
+## Configurações do host cliente [cli]:
+
+# Hostname
+# Endereço IP via DHCP (dinâmico, sem reserva)
+# Configuração da VM: Memória RAM: 1024 MB
+
+  config.vm.define "cli" do |cli|
+    cli.vm.hostname = "cli.ana.anderson.devops"
+    cli.vm.network :private_network, type: "dhcp"
+    cli.vm.provider "virtualbox" do |vb|
+      vb.memory = 1024  
     end
   end
 
-# Host cliente [cli]
-  config.vm.define "cli" do |cli|
-    cli.vm.hostname = "cli.ana.anderson.devops"
-    cli.vm.network :private_network, mac: "0800273A0003" type: "dhcp"
-    
-    cli.vm.provider 'virtualbox' do |vb|
-      vb.memory = 1024 # Sobrescrever a configuracao global
-    end
 
-    cli.vm.provision "ansible" do |ansible| # Provisionamento Ansible
-      ansible.compatibility_mode = "2.0"
-      ansible.playbook = "playbooks/cli.yml" # Playbook especifico para o host cliente
-    end
+## Configuração do provisionamento Ansible:
+
+# Executar playbook comum em todas as VMs
+  config.vm.provision "ansible" do |ansible|
+    ansible.compatibility_mode = "2.0"
+    ansible.playbook = "ansible/playbooks/common.yml"
+    ansible.inventory_path = "ansible/inventory.yml"
+    ansible.become = true
+    ansible.limit = "all"  
+    ansible.verbose = "v"
+  end
+
+# Executar playbooks específicos para o servidor de arquivos
+  config.vm.provision "ansible" do |ansible|
+    ansible.compatibility_mode = "2.0"
+    ansible.playbook = "ansible/playbooks/arq-dhcp-dns.yml"
+    ansible.inventory_path = "ansible/inventory.yml"
+    ansible.become = true
+    ansible.limit = "arq"  
+    ansible.verbose = "v"
+  end
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.compatibility_mode = "2.0"
+    ansible.playbook = "ansible/playbooks/arq-lvm-nfs.yml"
+    ansible.inventory_path = "ansible/inventory.yml"
+    ansible.become = true
+    ansible.limit = "arq"  
+    ansible.verbose = "v"
+  end
+
+# Executar playbook para o servidor de banco de dados
+  config.vm.provision "ansible" do |ansible|
+    ansible.compatibility_mode = "2.0"
+    ansible.playbook = "ansible/playbooks/db.yml"
+    ansible.inventory_path = "ansible/inventory.yml"
+    ansible.become = true
+    ansible.limit = "db"  
+    ansible.verbose = "v"
+  end
+
+# Executar playbook para o servidor de aplicação
+  config.vm.provision "ansible" do |ansible|
+    ansible.compatibility_mode = "2.0"
+    ansible.playbook = "ansible/playbooks/app.yml"
+    ansible.inventory_path = "ansible/inventory.yml"
+    ansible.become = true
+    ansible.limit = "app" 
+    ansible.verbose = "v"
+  end
+
+# Executar playbook para o host cliente
+  config.vm.provision "ansible" do |ansible|
+    ansible.compatibility_mode = "2.0"
+    ansible.playbook = "ansible/playbooks/cli.yml"
+    ansible.inventory_path = "ansible/inventory.yml"
+    ansible.become = true
+    ansible.limit = "cli" 
+    ansible.verbose = "v"
   end
 end
