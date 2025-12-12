@@ -1,9 +1,10 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# Configurações globais das VMs:
+
 Vagrant.configure("2") do |config|
-  # Configuracoes globais das VMs:
-  config.vm.box = 'debian/bookworm64'
+    config.vm.box = 'debian/bookworm64' # Box
   config.ssh.insert_key = false # Desativar geracao de chaves ssh
   if Vagrant.has_plugin?("vagrant-vbguest") # Verificar se o plugin esta instalado
     config.vbguest.auto_update = false # Desativar as atualizacoes automaticas

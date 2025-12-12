@@ -1,11 +1,14 @@
-# Atualização do sistema
 
+  - name: Configuração geral de todas as VMs
+    hosts: all
+    become: yes
 
-- name: Atualizar cache do apt
-  apt:
+  - name: Atualizar o Sistema Operacional
+    apt:
     update_cache: yes
-- name: Fazer upgrade do sistema
-  apt:
+
+  - name: Fazer upgrade do sistema
+    apt:
     upgrade: yes
 
 # 2 NTP (Chrony) e Timezone
