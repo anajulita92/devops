@@ -15,7 +15,7 @@
 O projeto tem como finalidade desenvolver competências práticas em DevOps e Infraestrutura como Código (IaC)onde será utilizado o Vagrant para provisionar máquinas virtuais e Ansible para automatizar a configuração do sistema operacional e serviços essenciais. O foco é simular um ambiente corporativo com servidores de arquivos, banco de dados, aplicação e um cliente, todos configurados automaticamente.
 
 ## Escopo do projeto
--Provisionamento da Infraestrutura com Vagrant
+Provisionamento da Infraestrutura com Vagrant
 O Vagrantfile será responsável por criar quatro máquinas virtuais no VirtualBox:
 
 Configurações comuns a todas as VMs:
