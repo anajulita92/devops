@@ -20,10 +20,10 @@ O Vagrantfile será responsável por criar quatro máquinas virtuais no VirtualB
 
 Configurações comuns a todas as VMs:
 
--Provider: VirtualBox
--Box: debian/bookworm64
--Memória RAM: 512 MB (exceto cliente, que terá 1024 MB)
--Clones com linked_clone
--Desativar geração de chaves SSH
--Desabilitar DHCP do VirtualBox via gatilho
--Guest additions desativado
+-Provider: VirtualBox;
+-Box: debian/bookworm64;
+-Memória RAM: 512 MB (exceto cliente, que terá 1024 MB);
+-Clones com linked_clone;
+-Desativar geração de chaves SSH;
+-Desabilitar DHCP do VirtualBox via gatilho;
+-Guest additions desativado;
