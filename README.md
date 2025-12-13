@@ -83,3 +83,46 @@ Configuração do SSH:
 - Instalação do cliente NFS
 
 - Permitir que usuários do grupo ifpb usem sudo
+
+Servidor de Arquivos (arq):
+- DHCP autoritativo
+
+- Domínio: ana.anderson.devops
+
+- DNS: 192.168.56.131
+
+- Lease-time padrão: 180s / máximo: 3600s
+
+- Escopo: 192.168.56.0/24 (faixa 50–100)
+
+- Gateway: 192.168.56.1
+
+- IPs fixos para db e app conforme matrícula
+
+DNS autoritativo:
+
+- Aceitar requisições da rede interna
+
+- Encaminhar para 1.1.1.1 e 8.8.8.8
+
+- Criar zonas direta e reversa para ana.anderson.devops
+
+LVM:
+
+- Criar VG dados com os 3 discos
+
+- Criar LV ifpb com 15 GB
+
+- Formatar em ext4 e montar em /dados
+
+NFS:
+
+- Compartilhar /dados/nfs para a rede interna
+
+- Criar usuário nfs-ifpb sem shell
+
+- Permitir escrita apenas para nfs-ifpb
+
+- Mapear usuários remotos para nfs-ifpb
+
+- Forçar flush imediato no disco
