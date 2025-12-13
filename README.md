@@ -36,10 +36,10 @@ Configurações comuns a todas as VMs:
 
 
 
-Máquinas específicas:
+#Máquinas específicas:
 
 
-Servidor de Arquivos (arq):
+#Servidor de Arquivos (arq):
 
 -3 discos adicionais de 10 GB cada , -IP fixo: 192.168.56.131 (31 = matrícula do primeiro integrante)
 
@@ -47,18 +47,18 @@ Servidor de Arquivos (arq):
 
 
 
-Servidor de Banco de Dados (db):
+#Servidor de Banco de Dados (db):
 
 -IP via DHCP (reservado por MAC) , -Hostname: db.ana.anderson.devops
 
 
 
-Servidor de Aplicação (app):
+#Servidor de Aplicação (app):
 
 -IP via DHCP (reservado por MAC)  -Hostname: app.ana.anderson.devops
 
 
 
-Cliente (cli):
+#Cliente (cli):
 
 -RAM: 1024 MB , -IP via DHCP , -Hostname: cli.ana.anderson.devops
