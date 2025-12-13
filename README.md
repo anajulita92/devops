@@ -35,35 +35,30 @@ Configurações comuns a todas as VMs:
 -Guest additions desativado;
 
 
+
 Máquinas específicas:
+
 
 Servidor de Arquivos (arq):
 
--3 discos adicionais de 10 GB cada
-
--IP fixo: 192.168.56.1XX (XX = matrícula do primeiro integrante)
+-3 discos adicionais de 10 GB cada , -IP fixo: 192.168.56.131 (31 = matrícula do primeiro integrante)
 
 -Hostname: arq.nome1.nome2.devops
 
 
+
 Servidor de Banco de Dados (db):
 
--IP via DHCP (reservado por MAC)
+-IP via DHCP (reservado por MAC) , -Hostname: db.ana.anderson.devops
 
--Hostname: db.ana.anderson.devops
 
 
 Servidor de Aplicação (app):
 
--IP via DHCP (reservado por MAC)
+-IP via DHCP (reservado por MAC)  -Hostname: app.ana.anderson.devops
 
--Hostname: app.ana.anderson.devops
 
 
 Cliente (cli):
 
--RAM: 1024 MB
-
--IP via DHCP
-
--Hostname: cli.ana.anderson.devops
+-RAM: 1024 MB , -IP via DHCP , -Hostname: cli.ana.anderson.devops
