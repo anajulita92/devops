@@ -12,4 +12,5 @@
 - **Anderson Gabriel Souza do Nascimento**
   
 ## Descrição do projeto
-Este projeto implementa uma infraestrutura como código (IaC) utilizando Vagrant para provisionamento de máquinas virtuais e Ansible para automação da configuração de serviços em ambiente DevOps.
+
+	O projeto tem como finalidade desenvolver competências práticas em DevOps e Infraestrutura como Código (IaC)onde será utilizado o Vagrant para provisionar máquinas virtuais e Ansible para automatizar a configuração do sistema operacional e serviços essenciais. O foco é simular um ambiente corporativo com servidores de arquivos, banco de dados, aplicação e um cliente, todos configurados automaticamente.
