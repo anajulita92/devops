@@ -1,0 +1,104 @@
+
+- name: Configurar LVM e NFS no servidor arq
+  hosts: arq
+  become: yes
+
+  tasks:
+    # 1. Instalar pacotes
+    - name: Instalar pacotes necessários
+      apt:
+        name:
+          - lvm2
+          - nfs-kernel-server
+        state: present
+
+    # 2. VERIFICAR se LVM já existe
+    - name: Verificar se LVM já está configurado
+      command: lvs dados/ifpb 2>/dev/null
+      register: lvm_check
+      ignore_errors: yes
+      changed_when: false
+
+    # 3. Só configurar LVM se NÃO existir
+    - name: Configurar LVM (se não existir)
+      block:
+        - name: Criar partições com fdisk (simples)
+          shell: |
+            echo 'type=83' | sfdisk /dev/sd{{ item }}
+          loop:
+            - b
+            - c
+            - d
+          ignore_errors: yes
+
+        - name: Aguardar partições
+          pause:
+            seconds: 3
+
+        - name: Criar volumes físicos
+          command: pvcreate -f /dev/sd{{ item }}1
+          loop:
+            - b
+            - c
+            - d
+
+        - name: Criar volume group
+          command: vgcreate dados /dev/sdb1 /dev/sdc1 /dev/sdd1
+
+        - name: Criar logical volume
+          command: lvcreate -L 15G -n ifpb dados
+
+        - name: Formatar LV
+          filesystem:
+            fstype: ext4
+            dev: /dev/dados/ifpb
+      when: lvm_check.rc != 0
+
+    # 4. Montar LVM (sempre)
+    - name: Criar diretório /dados
+      file:
+        path: /dados
+        state: directory
+
+    - name: Montar LV
+      mount:
+        path: /dados
+        src: /dev/dados/ifpb
+        fstype: ext4
+        state: mounted
+
+    - name: Configurar fstab
+      lineinfile:
+        path: /etc/fstab
+        line: "/dev/dados/ifpb /dados ext4 defaults 0 0"
+        state: present
+
+    # 5. Configurar NFS (SIMPLES)
+    - name: Criar diretório compartilhado
+      file:
+        path: /dados/nfs
+        state: directory
+        mode: 0777
+
+    - name: Criar usuário nfs-ifpb
+      user:
+        name: nfs-ifpb
+        shell: /usr/sbin/nologin
+        system: yes
+
+    - name: Configurar exports NFS (simples e direto)
+      copy:
+        dest: /etc/exports
+        content: |
+          /dados/nfs 192.168.56.0/24(rw,sync,no_subtree_check,all_squash)
+        mode: 0644
+      notify: restart nfs
+
+    - name: Aplicar exportações
+      command: exportfs -a
+
+  handlers:
+    - name: restart nfs
+      service:
+        name: nfs-kernel-server
+        state: restarted

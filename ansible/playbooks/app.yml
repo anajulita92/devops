@@ -1,43 +1,59 @@
-#1 Instalação do servidor
 
-- name: Instalar apache2
-  apt:
-    name: apache2
-    state: present
-- name: Criar e transferir index.html
-  copy:
-    content: |
-      <html>
-      <head><title>Projeto DevOps</title></head>
-      <body>
-        <h1>Projeto 01 - DevOps com Vagrant e Ansible</h1>
-        <p>Infraestrutura provisionada por: ana (20241380031) e anderson (20241380008)</p>
-        <p>Servidor: app.ana.anderson.devops</p>
-      </body>
-      </html>
-    dest: /var/www/html/index.html
-    mode: '0644'
+- name: Configurar servidor de aplicação
+  hosts: app
+  become: yes
 
-# 2 Montagem do NFS
+  tasks:
+    - name: Instalar Apache2
+      apt:
+        name: apache2
+        state: present
 
-- name: Instalar autofs
-  apt:
-    name: autofs
-    state: present
-- name: Criar ponto de montagem /var/nfs
-  file:
-    path: /var/nfs
-    state: directory
-- name: Configurar autofs principal (auto.master)
-  lineinfile:
-    path: /etc/auto.master
-    line: '/var/nfs /etc/auto.nfs'
-    state: present
-    insertafter: EOF
-- name: Configurar mapeamento direto do autofs (auto.nfs)
-  blockinfile:
-    path: /etc/auto.nfs
-    create: yes
-    block: |
-      nfs -fstype=nfs,rw,soft,intr arq:/dados/nfs
-  notify: restart autofs
+    - name: Iniciar e habilitar Apache
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+
+    - name: Copiar página inicial personalizada
+      template:
+        src: "../templates/index.html.j2"
+        dest: /var/www/html/index.html
+        mode: 0644
+
+    - name: Instalar autofs
+      apt:
+        name: autofs
+        state: present
+
+    - name: Iniciar e habilitar serviço autofs
+      service:
+        name: autofs
+        state: started
+        enabled: yes
+
+    - name: Criar ponto de montagem /var/nfs
+      file:
+        path: /var/nfs
+        state: directory
+
+    - name: Configurar autofs principal
+      lineinfile:
+        path: /etc/auto.master
+        line: '/var/nfs /etc/auto.nfs'
+        state: present
+        insertafter: EOF
+
+    - name: Configurar mapeamento NFS
+      copy:
+        dest: /etc/auto.nfs
+        content: "nfs -fstype=nfs,rw,soft,intr 192.168.56.131:/dados/nfs"
+        mode: 0644
+      notify: restart autofs
+
+  handlers:
+    - name: restart autofs
+      service:
+        name: autofs
+        state: restarted
+

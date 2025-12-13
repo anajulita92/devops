@@ -1,4 +1,14 @@
-## Configurações específicas para o servidor de arquivos [arq]
+# Informações básicas
+domain: "ana.anderson.devops"
+
+# Configurações DHCP
+dhcp_domain: "ana.anderson.devops"
+dhcp_dns_server: "192.168.56.131"
+dhcp_range_start: 50
+dhcp_range_end: 100
+dhcp_default_lease_time: 180
+dhcp_max_lease_time: 3600
+dhcp_gateway: "192.168.56.1"
 
 # Reservas DHCP estáticas por MAC
 dhcp_static_reservations:
@@ -8,6 +18,22 @@ dhcp_static_reservations:
   - name: "app"
     mac: "08:00:27:00:00:02"
     ip: "192.168.56.138"
+
+# Configurações DNS
+dns_forwarders:
+  - "1.1.1.1"
+  - "8.8.8.8"
+dns_allow_recursion: "192.168.56.0/24"
+dns_allow_query: "192.168.56.0/24"
+
+# Zonas DNS (ADICIONANDO AQUI O QUE ESTAVA FALTANDO)
+dns_zones:
+  - name: "ana.anderson.devops"
+    type: "master"
+    file: "/etc/bind/db.ana.anderson.devops"
+  - name: "56.168.192.in-addr.arpa"
+    type: "master"
+    file: "/etc/bind/db.56.168.192"
 
 # Configurações LVM
 lvm_volume_group: "dados"

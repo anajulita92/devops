@@ -70,6 +70,7 @@
         owner: anderson
         group: anderson
 
+   
     - name: Gerar chave SSH para usuário ana
       user:
         name: ana

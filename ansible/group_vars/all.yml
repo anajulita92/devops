@@ -2,3 +2,6 @@
 admin_group: "ifpb"
 timezone: "America/Recife"
 ntp_server: "pool.ntp.br"
+
+# Configurações NFS (compartilhadas)
+nfs_share_path: "/dados/nfs"

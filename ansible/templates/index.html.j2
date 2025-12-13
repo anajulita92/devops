@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Projeto DevOps - Ana e Anderson</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f0f0f0; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; }
+        .info { background: #ecf0f1; padding: 20px; border-radius: 5px; margin: 20px 0; }
+        .team { background: #d6eaf8; padding: 20px; border-radius: 5px; }
+        ul { list-style: none; padding: 0; }
+        li { padding: 8px 0; border-bottom: 1px solid #ddd; }
+        .footer { margin-top: 30px; text-align: center; color: #7f8c8d; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Projeto 01 - DevOps com Vagrant e Ansible</h1>
+        
+        <div class="info">
+            <h2>📋 Descrição do Projeto</h2>
+            <p>Este projeto implementa <strong>Infraestrutura como Código (IaC)</strong> utilizando Vagrant para provisionamento e Ansible para automação.</p>
+            <p>Configura 4 máquinas virtuais: servidor de arquivos (arq), banco de dados (db), aplicação (app) e cliente (cli).</p>
+        </div>
+        
+        <div class="team">
+            <h2>👥 Equipe</h2>
+            <ul>
+                <li><strong>Ana</strong> - Matrícula: 20241380031</li>
+                <li><strong>Anderson</strong> - Matrícula: 20241380008</li>
+            </ul>
+            <p><strong>Disciplina:</strong> Administração de Sistemas Abertos</p>
+            <p><strong>Professor:</strong> Leonidas Lima</p>
+            <p><strong>Período:</strong> 2025.2</p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Servidor:</strong> {{ inventory_hostname }}</p>
+            <p>Instituição: Instituto Federal da Paraíba - Campus João Pessoa</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,42 +1,62 @@
-# 1 Pacotes (Hostcliente)
 
-- name: Instalar firefox-esr e xauth
-  apt:
-    name:
-      - firefox-esr
-      - xauth
-    state: present
+- name: Configurar host cliente
+  hosts: cli
+  become: yes
 
-# SSH (Exportação do X11)
+  tasks:
+    - name: Instalar firefox-esr e xauth
+      apt:
+        name:
+          - firefox-esr
+          - xauth
+        state: present
 
-- name: Ajustar servidor SSH para permitir X11 forwarding
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^#?X11Forwarding'
-    line: 'X11Forwarding yes'
-    state: present
-  notify: restart sshd
+    - name: Configurar SSH para permitir X11 forwarding
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?X11Forwarding'
+        line: 'X11Forwarding yes'
+        state: present
+      notify: restart sshd
 
-# 3 Montagem do NFS
+    - name: Instalar autofs
+      apt:
+        name: autofs
+        state: present
 
-- name: Instalar autofs
-  apt:
-    name: autofs
-    state: present
-- name: Criar ponto de montagem /var/nfs
-  file:
-    path: /var/nfs
-    state: directory
-- name: Configurar autofs principal (auto.master)
-  lineinfile:
-    path: /etc/auto.master
-    line: '/var/nfs /etc/auto.nfs'
-    state: present
-    insertafter: EOF
-- name: Configurar mapeamento direto do autofs (auto.nfs)
-  blockinfile:
-    path: /etc/auto.nfs
-    create: yes
-    block: |
-      nfs -fstype=nfs,rw,soft,intr arq:/dados/nfs
-  notify: restart autofs
+    - name: Iniciar e habilitar serviço autofs
+      service:
+        name: autofs
+        state: started
+        enabled: yes
+
+    - name: Criar ponto de montagem /var/nfs
+      file:
+        path: /var/nfs
+        state: directory
+
+    - name: Configurar autofs principal
+      lineinfile:
+        path: /etc/auto.master
+        line: '/var/nfs /etc/auto.nfs'
+        state: present
+        insertafter: EOF
+
+    - name: Configurar mapeamento NFS
+      copy:
+        dest: /etc/auto.nfs
+        content: "nfs -fstype=nfs,rw,soft,intr 192.168.56.131:/dados/nfs"
+        mode: 0644
+      notify: restart autofs
+
+  handlers:
+    - name: restart sshd
+      service:
+        name: ssh
+        state: restarted
+
+    - name: restart autofs
+      service:
+        name: autofs
+        state: restarted
+

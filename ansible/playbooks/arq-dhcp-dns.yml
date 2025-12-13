@@ -1,75 +1,66 @@
 
-- name: Configurar servidor DHCP e DNS no arq
+- name: Configurar DHCP e DNS no servidor arq
   hosts: arq
   become: yes
 
   tasks:
-    - name: Instalar servidor DHCP (isc-dhcp-server)
+    # 1. Instalar DHCP
+    - name: Instalar servidor DHCP
       apt:
         name: isc-dhcp-server
         state: present
-    
-    - name: Configurar arquivo dhcpd.conf
-      template:
-        src: dhcpd.conf.j2
+
+    # 2. Copiar configuração DHCP (arquivo estático)
+    - name: Copiar dhcpd.conf
+      copy:
+        src: "../files/dhcpd.conf"
         dest: /etc/dhcp/dhcpd.conf
-      notify: restart isc-dhcp-server
-    
-    - name: Configurar interface para serviço DHCP
+      notify: restart dhcp
+
+    # 3. Configurar interface para DHCP
+    - name: Configurar interface para DHCP
       lineinfile:
         path: /etc/default/isc-dhcp-server
         regexp: '^INTERFACESv4='
         line: 'INTERFACESv4="eth1"'
-      notify: restart isc-dhcp-server
-       
-    - name: Instalar servidor DNS (bind9)
+        state: present
+
+    # 4. Instalar DNS
+    - name: Instalar Bind9 (DNS)
       apt:
         name: bind9
         state: present
-    
-    - name: Configurar opções do DNS
-      template:
-        src: named.conf.options.j2
+
+    # 5. Copiar configurações DNS (arquivos estáticos)
+    - name: Copiar named.conf.options
+      copy:
+        src: "../files/named.conf.options"
         dest: /etc/bind/named.conf.options
-      notify: restart bind9
-    
-    - name: Configurar zonas DNS
-      template:
-        src: named.conf.local.j2
+
+    - name: Copiar named.conf.local
+      copy:
+        src: "../files/named.conf.local"
         dest: /etc/bind/named.conf.local
-      notify: restart bind9
-    
-    - name: Configurar zona direta do domínio
-      template:
-        src: zona-direta.j2
+
+    # 6. Copiar zonas DNS (arquivos estáticos)
+    - name: Copiar zona direta
+      copy:
+        src: "../files/db.ana.anderson.devops"
         dest: /etc/bind/db.ana.anderson.devops
-      notify: restart bind9
-    
-    - name: Configurar zona reversa
-      template:
-        src: zona-reversa.j2
+
+    - name: Copiar zona reversa
+      copy:
+        src: "../files/db.56.168.192"
         dest: /etc/bind/db.56.168.192
-      notify: restart bind9
-    
-    - name: Habilitar e iniciar servidor DHCP
-      service:
-        name: isc-dhcp-server
-        enabled: yes
-        state: started
-    
-    - name: Habilitar e iniciar servidor DNS
+
+    # 7. Reiniciar serviços
+    - name: Reiniciar Bind9
       service:
         name: bind9
-        enabled: yes
-        state: started
+        state: restarted
 
   handlers:
-    - name: restart isc-dhcp-server
+    - name: restart dhcp
       service:
         name: isc-dhcp-server
-        state: restarted
-    
-    - name: restart bind9
-      service:
-        name: bind9
         state: restarted
