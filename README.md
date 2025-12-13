@@ -51,6 +51,35 @@ Configurações comuns a todas as VMs:
 
 -IP via DHCP (reservado por MAC)  -Hostname: app.ana.anderson.devops
 
-##Cliente (cli):
+## Cliente (cli):
 
 -RAM: 1024 MB , -IP via DHCP , -Hostname: cli.ana.anderson.devops
+
+
+##Configuração Automática com Ansible
+Os playbooks do Ansible serão responsáveis por configurar cada máquina.
+
+Configurações comuns a todas as máquinas:
+- Atualização do sistema (apt update && apt upgrade)
+
+- Instalação e configuração do NTP (chrony) → servidor pool.ntp.br
+
+- Ajuste da timezone → America/Recife
+
+- Criação do grupo ifpb
+
+- Criação dos usuários nome1 e nome2 (primeiros nomes da equipe)
+
+Configuração do SSH:
+
+- Apenas autenticação por chave pública
+
+- Bloqueio de login root
+
+- Acesso restrito aos grupos vagrant e ifpb
+
+- Mensagem de login: "Acesso apenas para pessoas com autorização expressa!!!"
+
+- Instalação do cliente NFS
+
+- Permitir que usuários do grupo ifpb usem sudo
