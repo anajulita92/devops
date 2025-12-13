@@ -36,7 +36,7 @@ Configurações comuns a todas as VMs:
 
 
 
-#Máquinas específicas:
+##Máquinas específicas:
 
 
 #Servidor de Arquivos (arq):
@@ -47,15 +47,18 @@ Configurações comuns a todas as VMs:
 
 
 
+
 #Servidor de Banco de Dados (db):
 
 -IP via DHCP (reservado por MAC) , -Hostname: db.ana.anderson.devops
 
 
 
+
 #Servidor de Aplicação (app):
 
 -IP via DHCP (reservado por MAC)  -Hostname: app.ana.anderson.devops
+
 
 
 
