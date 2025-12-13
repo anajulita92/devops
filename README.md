@@ -126,3 +126,21 @@ NFS:
 - Mapear usuários remotos para nfs-ifpb
 
 - Forçar flush imediato no disco
+
+
+Servidor de Banco de Dados (db):
+- Instalar MariaDB Server
+
+- Configurar autofs para montar /dados/nfs em /var/nfs
+
+Servidor de Aplicação (app):
+- Instalar Apache2
+
+- Configurar autofs para montar /dados/nfs em /var/nfs
+
+Cliente (cli):
+- Instalar Firefox ESR e xauth
+
+- Configurar SSH para exportar interface gráfica (X11 forwarding)
+
+- Configurar autofs para montar /dados/nfs em /var/nfs
