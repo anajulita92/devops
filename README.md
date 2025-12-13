@@ -20,43 +20,43 @@ O Vagrantfile será responsável por criar quatro máquinas virtuais no VirtualB
 
 Configurações comuns a todas as VMs:
 
--Provider: VirtualBox
+- Provider: VirtualBox
 
--Box: debian/bookworm64
+- Box: debian/bookworm64
 
--Memória RAM: 512 MB (exceto cliente, que terá 1024 MB);
+- Memória RAM: 512 MB (exceto cliente, que terá 1024 MB);
 
--Clones com linked_clone;
+- Clones com linked_clone;
 
--Desativar geração de chaves SSH;
+- Desativar geração de chaves SSH;
 
--Desabilitar DHCP do VirtualBox via gatilho;
+- Desabilitar DHCP do VirtualBox via gatilho;
 
--Guest additions desativado;
+- Guest additions desativado;
 
 ## Máquinas específicas:
 
 ## Servidor de Arquivos (arq):
 
--3 discos adicionais de 10 GB cada , -IP fixo: 192.168.56.131 (31 = matrícula do primeiro integrante)
+- 3 discos adicionais de 10 GB cada , -IP fixo: 192.168.56.131 (31 = matrícula do primeiro integrante)
 
--Hostname: arq.nome1.nome2.devops
+- Hostname: arq.nome1.nome2.devops
 
 
 ## Servidor de Banco de Dados (db):
 
--IP via DHCP (reservado por MAC) , -Hostname: db.ana.anderson.devops
+- IP via DHCP (reservado por MAC) , -Hostname: db.ana.anderson.devops
 
 ## Servidor de Aplicação (app):
 
--IP via DHCP (reservado por MAC)  -Hostname: app.ana.anderson.devops
+- IP via DHCP (reservado por MAC)  -Hostname: app.ana.anderson.devops
 
 ## Cliente (cli):
 
--RAM: 1024 MB , -IP via DHCP , -Hostname: cli.ana.anderson.devops
+- RAM: 1024 MB , -IP via DHCP , -Hostname: cli.ana.anderson.devops
 
 
-##Configuração Automática com Ansible
+## Configuração Automática com Ansible
 Os playbooks do Ansible serão responsáveis por configurar cada máquina.
 
 Configurações comuns a todas as máquinas:
