@@ -4,6 +4,7 @@
   become: yes
 
   tasks:
+
     - name: Atualizar cache de pacotes APT
       apt:
         update_cache: yes
@@ -12,9 +13,7 @@
     - name: Executar upgrade do sistema
       apt:
         upgrade: dist
-        update_cache: yes
-
-   
+       
     - name: Instalar pacote chrony
       apt:
         name: chrony
@@ -27,19 +26,16 @@
         line: 'pool pool.ntp.br iburst'
         state: present
       notify: restart chrony
-
     
     - name: Configurar timezone para America/Recife
       timezone:
         name: America/Recife
-
-    
+ 
     - name: Criar grupo ifpb
       group:
         name: ifpb
         state: present
 
-    
     - name: Criar usuário ana
       user:
         name: ana
@@ -69,8 +65,7 @@
         mode: '0700'
         owner: anderson
         group: anderson
-
-   
+  
     - name: Gerar chave SSH para usuário ana
       user:
         name: ana
@@ -112,14 +107,11 @@
     - name: Criar arquivo de banner SSH
       copy:
         content: |
-          ===========================================
+          =======================================================
           BEM-VINDO AO SERVIDOR
-          ===========================================
+          =======================================================
           Acesso apenas para pessoas com autorização expressa!!!
-          
-          Equipe: Ana (20241380031) e Anderson (20241380008)
-          Projeto: DevOps com Vagrant e Ansible
-          ===========================================
+          =======================================================
         dest: /etc/issue.net
         owner: root
         group: root
@@ -133,12 +125,10 @@
         state: present
       notify: restart sshd
 
-
     - name: Instalar cliente NFS (nfs-common)
       apt:
         name: nfs-common
         state: present
-
     
     - name: Criar arquivo de configuração sudo para grupo ifpb
       copy:
