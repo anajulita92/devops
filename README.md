@@ -59,88 +59,60 @@ RAM: 1024 MB , -IP via DHCP , -Hostname: cli.ana.anderson.devops
 ## Configuração Automática com Ansible
 Os playbooks do Ansible serão responsáveis por configurar cada máquina.
 
-Configurações comuns a todas as máquinas:
-- Atualização do sistema (apt update && apt upgrade)
+- Common.yml
 
-- Instalação e configuração do NTP (chrony) → servidor pool.ntp.br
+I. Preparação do Sistema
+Aplicar em todos os hosts (hosts: all) com privilégios de root (become: yes).
 
-- Ajuste da timezone → America/Recife
+Atualizar Cache APT e garantir a validade por 1 hora.
 
-- Criação do grupo ifpb
-
-- Criação dos usuários nome1 e nome2 (primeiros nomes da equipe)
-
-Configuração do SSH:
-
-- Apenas autenticação por chave pública
-
-- Bloqueio de login root
-
-- Acesso restrito aos grupos vagrant e ifpb
-
-- Mensagem de login: "Acesso apenas para pessoas com autorização expressa!!!"
-
-- Instalação do cliente NFS
-
-- Permitir que usuários do grupo ifpb usem sudo
-
-Servidor de Arquivos (arq):
-- DHCP autoritativo
-
-- Domínio: ana.anderson.devops
-
-- DNS: 192.168.56.131
-
-- Lease-time padrão: 180s / máximo: 3600s
-
-- Escopo: 192.168.56.0/24 (faixa 50–100)
-
-- Gateway: 192.168.56.1
-
-- IPs fixos para db e app conforme matrícula
-
-DNS autoritativo:
-
-- Aceitar requisições da rede interna
-
-- Encaminhar para 1.1.1.1 e 8.8.8.8
-
-- Criar zonas direta e reversa para ana.anderson.devops
-
-LVM:
-
-- Criar VG dados com os 3 discos
-
-- Criar LV ifpb com 15 GB
-
-- Formatar em ext4 e montar em /dados
-
-NFS:
-
-- Compartilhar /dados/nfs para a rede interna
-
-- Criar usuário nfs-ifpb sem shell
-
-- Permitir escrita apenas para nfs-ifpb
-
-- Mapear usuários remotos para nfs-ifpb
-
-- Forçar flush imediato no disco
+Executar Upgrade Completo do sistema (upgrade: dist).
 
 
-Servidor de Banco de Dados (db):
-- Instalar MariaDB Server
 
-- Configurar autofs para montar /dados/nfs em /var/nfs
+II.Sincronização e Fuso Horário
+Instalar o pacote chrony (para sincronização de tempo).
 
-Servidor de Aplicação (app):
-- Instalar Apache2
+Configurar chrony para usar o servidor brasileiro pool.ntp.br e notificar a reinicialização do serviço.
 
-- Configurar autofs para montar /dados/nfs em /var/nfs
+Configurar o Fuso Horário do sistema para America/Recife.
 
-Cliente (cli):
-- Instalar Firefox ESR e xauth
 
-- Configurar SSH para exportar interface gráfica (X11 forwarding)
 
-- Configurar autofs para montar /dados/nfs em /var/nfs
+III.Gerenciamento de Usuários e Sudo
+Criar o grupo ifpb.
+
+Criar usuários ana e anderson:
+
+Ambos adicionados aos grupos ifpb e vagrant.
+
+Com shell /bin/bash e criação de diretório home.
+
+Configurar Sudo: Criar arquivo /etc/sudoers.d/ifpb para permitir que o grupo ifpb execute comandos como root sem senha (NOPASSWD: ALL).
+
+
+
+IV. Configuração de Segurança SSH
+Preparar diretórios SSH: Criar /home/ana/.ssh e /home/anderson/.ssh com permissões restritas (0700).
+
+Gerar Chaves SSH (2048 bits) para os usuários ana e anderson (armazenadas em .ssh/id_rsa).
+
+Reforçar sshd_config (Notificando restart sshd para cada alteração):
+
+Desativar autenticação por senha (PasswordAuthentication no).
+
+Bloquear acesso direto de root (PermitRootLogin no).
+
+Permitir login apenas para usuários dos grupos vagrant e ifpb (AllowGroups vagrant ifpb).
+
+Configurar Banner SSH: Criar e configurar o arquivo /etc/issue.net para exibir uma mensagem de boas-vindas/alerta no login.
+
+
+
+V. Outras Configurações
+Instalar cliente NFS (nfs-common) para permitir montagens de compartilhamentos de rede.
+
+VI. Manipuladores (Handlers)
+restart chrony: Reinicia o serviço chrony quando a configuração de tempo é alterada.
+
+restart sshd: Reinicia o serviço ssh (SSHD) sempre que as configurações de segurança SSH são alteradas.
