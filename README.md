@@ -25,38 +25,7 @@ Servidor de Aplicação (app): Também com IP reservado via DHCP (192.168.56.138
 
 Cliente (cli): Configurado com 1024MB de RAM, possui Firefox e suporte a interface gráfica via X11. Serve como estação de trabalho para acesso aos demais servidores.
 
-<<<<<<< HEAD
-- Clones com linked_clone;
-
-- Desativar geração de chaves SSH;
-
-- Desabilitar DHCP do VirtualBox via gatilho;
-
-- Guest additions desativado;
-
-# Máquinas específicas:
-
-- Servidor de Arquivos (arq):
-
-3 discos adicionais de 10 GB cada , -IP fixo: 192.168.56.131 (31 = matrícula do primeiro integrante)
-
-Hostname: arq.nome1.nome2.devops
-
-
-- Servidor de Banco de Dados (db):
-
-IP via DHCP (reservado por MAC) , -Hostname: db.ana.anderson.devops
-
-- Servidor de Aplicação (app):
-
-IP via DHCP (reservado por MAC)  -Hostname: app.ana.anderson.devops
-
-- Cliente (cli):
-
-RAM: 1024 MB , -IP via DHCP , -Hostname: cli.ana.anderson.devops
-=======
 Todos os servidores utilizam Debian 12 (bookworm) como sistema operacional base.
-
 
 ## Configuração automatizada:
 O provisionamento ocorre em duas etapas sequenciais. Primeiro, o Vagrant cria as máquinas virtuais com as especificações de hardware e rede. Em seguida, o Ansible executa playbooks especializados para cada servidor.
@@ -74,7 +43,6 @@ O servidor de banco de dados executa MariaDB, enquanto o servidor de aplicação
 
 ## Segurança implementada:
 O projeto incorpora várias práticas de segurança: autenticação SSH exclusivamente por chaves públicas, bloqueio de acesso root via SSH, restrição de acesso por grupos de usuários, criação de banner de aviso legal, e configuração de um usuário NFS sem shell para limitar privilégios. Usuários do grupo ifpb têm permissão para usar sudo sem senha.
->>>>>>> 8af0763 (readme atualizado)
 
 ## Validação da solução:
 Para verificar o funcionamento correto da infraestrutura, é possível testar a resolução de nomes internos (ping db.ana.anderson.devops), verificar o acesso SSH seguro com chaves, confirmar o compartilhamento NFS montado em /var/nfs nos servidores, e acessar a página web no servidor de aplicação. O DHCP pode ser validado observando os IPs atribuídos automaticamente aos servidores conforme suas reservas por MAC.
@@ -82,41 +50,4 @@ Para verificar o funcionamento correto da infraestrutura, é possível testar a 
 ## Execução do projeto:
 A infraestrutura completa é provisionada com um único comando: vagrant up. Este comando baixa a imagem do sistema, cria as máquinas virtuais, configura a rede e executa todas as automações do Ansible. O processo leva aproximadamente 15-20 minutos na primeira execução devido ao download da imagem base.
 
-<<<<<<< HEAD
-- **`common.yml`**
-
-1.  Preparação do Sistema
-- Aplicar em todos os hosts (hosts: all) com privilégios de root (become: yes).
-- Atualizar Cache APT e garantir a validade por 1 hora.
-- Executar Upgrade Completo do sistema
-
-2. Sincronização e Fuso Horário
-- Instalar o pacote chrony (para sincronização de tempo).
-- Configurar chrony para usar o servidor brasileiro pool.ntp.br e notificar a reinicialização do serviço.
-- Configurar o Fuso Horário do sistema para America/Recife.
-
-3. Gerenciamento de Usuários e Sudo
-- Criar o grupo ifpb.
-- Criar usuários ana e anderson:
-- Ambos adicionados aos grupos ifpb e vagrant.
-- Com shell /bin/bash e criação de diretório home.
-- Configurar Sudo: Criar arquivo /etc/sudoers.d/ifpb para permitir que o grupo ifpb execute comandos como root sem senha (NOPASSWD: ALL).
-
-4. Configuração de Segurança SSH
-- Preparar diretórios SSH: Criar /home/ana/.ssh e /home/anderson/.ssh com permissões restritas (0700).
-- Gerar Chaves SSH (2048 bits) para os usuários ana e anderson (armazenadas em .ssh/id_rsa).
-- Reforçar sshd_config (Notificando restart sshd para cada alteração):
-- Desativar autenticação por senha (PasswordAuthentication no).
-- Bloquear acesso direto de root (PermitRootLogin no).
-- Permitir login apenas para usuários dos grupos vagrant e ifpb (AllowGroups vagrant ifpb).
-- Configurar Banner SSH: Criar e configurar o arquivo /etc/issue.net para exibir uma mensagem de boas-vindas/alerta no login.
-
-5. Outras Configurações
-- Instalar cliente NFS (nfs-common) para permitir montagens de compartilhamentos de rede.
-
-6. Manipuladores (Handlers)
-- restart chrony: Reinicia o serviço chrony quando a configuração de tempo é alterada.
-- restart sshd: Reinicia o serviço ssh (SSHD) sempre que as configurações de segurança SSH são alteradas.
-=======
 Esta documentação representa um projeto de infraestrutura como código reproduzível, que demonstra competências em provisionamento automatizado, configuração de serviços de rede e implementação de medidas de segurança em ambiente Linux.
->>>>>>> 8af0763 (readme atualizado)
