@@ -8,8 +8,8 @@
 **Instituto Federal da Paraíba - Campus João Pessoa**
 
 ## Integrantes da equipe
-- **Ana Julita Oliveira da Silva**
-- **Anderson Gabriel Souza do Nascimento**
+- **Ana Julita Oliveira da Silva** **20241380031**
+- **Anderson Gabriel Souza do Nascimento** **20241380008**
   
 ## Descrição do projeto
 O projeto tem como finalidade desenvolver competências práticas em DevOps e Infraestrutura como Código (IaC)onde será utilizado o Vagrant para provisionar máquinas virtuais e Ansible para automatizar a configuração do sistema operacional e serviços essenciais. O foco é simular um ambiente corporativo com servidores de arquivos, banco de dados, aplicação e um cliente, todos configurados automaticamente.
