@@ -4,7 +4,6 @@
   become: yes
 
   tasks:
-
     - name: Atualizar cache de pacotes APT
       apt:
         update_cache: yes
@@ -13,8 +12,7 @@
     - name: Executar upgrade do sistema
       apt:
         upgrade: dist
-       
-
+        update_cache: yes
 
     - name: Instalar pacote chrony
       apt:
@@ -28,21 +26,15 @@
         line: 'pool pool.ntp.br iburst'
         state: present
       notify: restart chrony
-    
-
 
     - name: Configurar timezone para America/Recife
       timezone:
         name: America/Recife
- 
-
 
     - name: Criar grupo ifpb
       group:
         name: ifpb
         state: present
-
-
 
     - name: Criar usuário ana
       user:
@@ -57,8 +49,6 @@
         groups: "ifpb,vagrant"
         shell: /bin/bash
         create_home: yes
-
-
 
     - name: Criar diretório .ssh para ana
       file:
@@ -75,8 +65,6 @@
         mode: '0700'
         owner: anderson
         group: anderson
-  
-
 
     - name: Gerar chave SSH para usuário ana
       user:
@@ -85,45 +73,12 @@
         ssh_key_bits: 2048
         ssh_key_file: ".ssh/id_rsa"
 
-    - name: Adicionar chave pública de ana ao authorized_keys
-      authorized_key:
-        user: ana
-        state: present
-        key: "{{ lookup('file', '/home/ana/.ssh/id_rsa.pub') }}"
-      when: file_exists == true
-
-    - name: Configurar permissões do authorized_keys para ana
-      file:
-        path: /home/ana/.ssh/authorized_keys
-        owner: ana
-        group: ana
-        mode: '0600'
-
-
-
     - name: Gerar chave SSH para usuário anderson
       user:
         name: anderson
         generate_ssh_key: yes
         ssh_key_bits: 2048
         ssh_key_file: ".ssh/id_rsa"
- 
-    - name: Adicionar chave pública de anderson ao authorized_keys
-      authorized_key:
-        user: anderson
-        state: present
-        key: "{{ lookup('file', '/home/anderson/.ssh/id_rsa.pub') }}"
-      when: file_exists == true
-
-    - name: Configurar permissões do authorized_keys para anderson
-      file:
-        path: /home/anderson/.ssh/authorized_keys
-        owner: anderson
-        group: anderson
-        mode: '0600'
-
-
-
 
     - name: Configurar SSH para permitir apenas autenticação por chaves
       lineinfile:
@@ -152,11 +107,11 @@
     - name: Criar arquivo de banner SSH
       copy:
         content: |
-          =======================================================
+          ======================================================
           BEM-VINDO AO SERVIDOR
-          =======================================================
+          ======================================================
           Acesso apenas para pessoas com autorização expressa!!!
-          =======================================================
+          ======================================================
         dest: /etc/issue.net
         owner: root
         group: root
@@ -170,27 +125,17 @@
         state: present
       notify: restart sshd
 
-
-
-
     - name: Instalar cliente NFS (nfs-common)
       apt:
         name: nfs-common
         state: present
-    
-
-
 
     - name: Criar arquivo de configuração sudo para grupo ifpb
       copy:
         content: |
-          # Permissão para grupo ifpb executar comandos como root
           %ifpb ALL=(ALL) NOPASSWD: ALL
         dest: /etc/sudoers.d/ifpb
         mode: '0440'
-
-
-
 
   handlers:
     - name: restart chrony

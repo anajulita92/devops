@@ -14,7 +14,7 @@
 
     # 2. VERIFICAR se LVM já existe
     - name: Verificar se LVM já está configurado
-      command: lvs dados/ifpb 2>/dev/null
+      shell: lvs dados/ifpb 2>/dev/null
       register: lvm_check
       ignore_errors: yes
       changed_when: false
