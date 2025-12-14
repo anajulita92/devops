@@ -1,4 +1,4 @@
-# Projeto devOps - Vagrant e Ansible
+# Projeto devOps - Infraestrutura como código com Vagrant e Ansible
 
 ## Informações do projeto
 **Disciplina**: Administração de Sistemas Abertos  
@@ -11,21 +11,21 @@
 - **Ana Julita Oliveira da Silva** - **20241380031**
 - **Anderson Gabriel Souza do Nascimento** - **20241380008**
   
-## Descrição do projeto
-O projeto tem como finalidade desenvolver competências práticas em DevOps e Infraestrutura como Código (IaC)onde será utilizado o Vagrant para provisionar máquinas virtuais e Ansible para automatizar a configuração do sistema operacional e serviços essenciais. O foco é simular um ambiente corporativo com servidores de arquivos, banco de dados, aplicação e um cliente, todos configurados automaticamente.
+## Visão geral
+Este projeto implementa uma infraestrutura virtual completa utilizando Vagrant e Ansible, com quatro servidores especializados que se comunicam em uma rede privada. A solução automatiza desde a criação das máquinas virtuais até a configuração avançada de serviços de rede e armazenamento, demonstrando os princípios de Infraestrutura como Código.
 
-## Escopo do projeto
-Provisionamento da Infraestrutura com Vagrant
-O Vagrantfile será responsável por criar quatro máquinas virtuais no VirtualBox:
+## Arquitetura do sistema
+A infraestrutura consiste em quatro máquinas virtuais interconectadas:
 
-Configurações comuns a todas as VMs:
+Servidor de Arquivos (arq): Configurado com IP fixo 192.168.56.131, fornece serviços de DHCP, DNS, armazenamento LVM e compartilhamento NFS. Possui três discos adicionais de 10GB cada para o sistema de armazenamento.
 
-- Provider: VirtualBox
+Servidor de Banco de Dados (db): Obtém IP via DHCP com reserva estática (192.168.56.108) e executa o MariaDB. Monta automaticamente o compartilhamento NFS do servidor de arquivos.
 
-- Box: debian/bookworm64
+Servidor de Aplicação (app): Também com IP reservado via DHCP (192.168.56.138), executa o Apache com uma página web personalizada. Acessa o compartilhamento NFS para armazenamento.
 
-- Memória RAM: 512 MB (exceto cliente, que terá 1024 MB);
+Cliente (cli): Configurado com 1024MB de RAM, possui Firefox e suporte a interface gráfica via X11. Serve como estação de trabalho para acesso aos demais servidores.
 
+<<<<<<< HEAD
 - Clones com linked_clone;
 
 - Desativar geração de chaves SSH;
@@ -54,11 +54,35 @@ IP via DHCP (reservado por MAC)  -Hostname: app.ana.anderson.devops
 - Cliente (cli):
 
 RAM: 1024 MB , -IP via DHCP , -Hostname: cli.ana.anderson.devops
+=======
+Todos os servidores utilizam Debian 12 (bookworm) como sistema operacional base.
 
 
-## Configuração Automática com Ansible
-Os playbooks do Ansible serão responsáveis por configurar cada máquina.
+## Configuração automatizada:
+O provisionamento ocorre em duas etapas sequenciais. Primeiro, o Vagrant cria as máquinas virtuais com as especificações de hardware e rede. Em seguida, o Ansible executa playbooks especializados para cada servidor.
 
+As configurações comuns aplicadas a todas as máquinas incluem: atualização do sistema, configuração de timezone para America/Recife, sincronização de horário com servidores NTP brasileiros, criação de usuários com chaves SSH, e hardening do serviço SSH com autenticação apenas por chaves, bloqueio de acesso root e restrição por grupos de usuários.
+
+## Serviços de rede:
+O servidor de arquivos implementa um servidor DHCP autoritativo que gerencia a faixa de IPs 192.168.56.50 a 100, com reservas estáticas baseadas em endereços MAC para os servidores db e app. O serviço DNS configurado no mesmo servidor resolve nomes internos no domínio ana.anderson.devops e encaminha requisições externas para os servidores 1.1.1.1 e 8.8.8.8.
+
+## Sistema de armazenamento:
+Três discos de 10GB são combinados através de LVM para criar um volume único de 15GB formatado com ext4 e montado em /dados. Este diretório contém um compartilhamento NFS (/dados/nfs) acessível por toda a rede interna, configurado com medidas de segurança que incluem um usuário dedicado sem acesso a shell.
+
+## Serviços especializados:
+O servidor de banco de dados executa MariaDB, enquanto o servidor de aplicação roda Apache com uma página HTML personalizada que apresenta informações do projeto. Ambos montam automaticamente o compartilhamento NFS usando autofs. O cliente, por sua vez, possui Firefox e suporte a X11 forwarding para permitir a execução remota de aplicações gráficas.
+
+## Segurança implementada:
+O projeto incorpora várias práticas de segurança: autenticação SSH exclusivamente por chaves públicas, bloqueio de acesso root via SSH, restrição de acesso por grupos de usuários, criação de banner de aviso legal, e configuração de um usuário NFS sem shell para limitar privilégios. Usuários do grupo ifpb têm permissão para usar sudo sem senha.
+>>>>>>> 8af0763 (readme atualizado)
+
+## Validação da solução:
+Para verificar o funcionamento correto da infraestrutura, é possível testar a resolução de nomes internos (ping db.ana.anderson.devops), verificar o acesso SSH seguro com chaves, confirmar o compartilhamento NFS montado em /var/nfs nos servidores, e acessar a página web no servidor de aplicação. O DHCP pode ser validado observando os IPs atribuídos automaticamente aos servidores conforme suas reservas por MAC.
+
+## Execução do projeto:
+A infraestrutura completa é provisionada com um único comando: vagrant up. Este comando baixa a imagem do sistema, cria as máquinas virtuais, configura a rede e executa todas as automações do Ansible. O processo leva aproximadamente 15-20 minutos na primeira execução devido ao download da imagem base.
+
+<<<<<<< HEAD
 - **`common.yml`**
 
 1.  Preparação do Sistema
@@ -93,3 +117,6 @@ Os playbooks do Ansible serão responsáveis por configurar cada máquina.
 6. Manipuladores (Handlers)
 - restart chrony: Reinicia o serviço chrony quando a configuração de tempo é alterada.
 - restart sshd: Reinicia o serviço ssh (SSHD) sempre que as configurações de segurança SSH são alteradas.
+=======
+Esta documentação representa um projeto de infraestrutura como código reproduzível, que demonstra competências em provisionamento automatizado, configuração de serviços de rede e implementação de medidas de segurança em ambiente Linux.
+>>>>>>> 8af0763 (readme atualizado)
