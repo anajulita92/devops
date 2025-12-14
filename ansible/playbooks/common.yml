@@ -14,6 +14,8 @@
       apt:
         upgrade: dist
        
+
+
     - name: Instalar pacote chrony
       apt:
         name: chrony
@@ -27,14 +29,20 @@
         state: present
       notify: restart chrony
     
+
+
     - name: Configurar timezone para America/Recife
       timezone:
         name: America/Recife
  
+
+
     - name: Criar grupo ifpb
       group:
         name: ifpb
         state: present
+
+
 
     - name: Criar usuário ana
       user:
@@ -49,6 +57,8 @@
         groups: "ifpb,vagrant"
         shell: /bin/bash
         create_home: yes
+
+
 
     - name: Criar diretório .ssh para ana
       file:
@@ -66,12 +76,30 @@
         owner: anderson
         group: anderson
   
+
+
     - name: Gerar chave SSH para usuário ana
       user:
         name: ana
         generate_ssh_key: yes
         ssh_key_bits: 2048
         ssh_key_file: ".ssh/id_rsa"
+
+    - name: Adicionar chave pública de ana ao authorized_keys
+      authorized_key:
+        user: ana
+        state: present
+        key: "{{ lookup('file', '/home/ana/.ssh/id_rsa.pub') }}"
+      when: file_exists == true
+
+    - name: Configurar permissões do authorized_keys para ana
+      file:
+        path: /home/ana/.ssh/authorized_keys
+        owner: ana
+        group: ana
+        mode: '0600'
+
+
 
     - name: Gerar chave SSH para usuário anderson
       user:
@@ -80,6 +108,23 @@
         ssh_key_bits: 2048
         ssh_key_file: ".ssh/id_rsa"
  
+    - name: Adicionar chave pública de anderson ao authorized_keys
+      authorized_key:
+        user: anderson
+        state: present
+        key: "{{ lookup('file', '/home/anderson/.ssh/id_rsa.pub') }}"
+      when: file_exists == true
+
+    - name: Configurar permissões do authorized_keys para anderson
+      file:
+        path: /home/anderson/.ssh/authorized_keys
+        owner: anderson
+        group: anderson
+        mode: '0600'
+
+
+
+
     - name: Configurar SSH para permitir apenas autenticação por chaves
       lineinfile:
         path: /etc/ssh/sshd_config
@@ -103,7 +148,7 @@
         line: 'AllowGroups vagrant ifpb'
         state: present
       notify: restart sshd
- 
+
     - name: Criar arquivo de banner SSH
       copy:
         content: |
@@ -125,11 +170,17 @@
         state: present
       notify: restart sshd
 
+
+
+
     - name: Instalar cliente NFS (nfs-common)
       apt:
         name: nfs-common
         state: present
     
+
+
+
     - name: Criar arquivo de configuração sudo para grupo ifpb
       copy:
         content: |
@@ -137,6 +188,9 @@
           %ifpb ALL=(ALL) NOPASSWD: ALL
         dest: /etc/sudoers.d/ifpb
         mode: '0440'
+
+
+
 
   handlers:
     - name: restart chrony
