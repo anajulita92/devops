@@ -59,60 +59,37 @@ RAM: 1024 MB , -IP via DHCP , -Hostname: cli.ana.anderson.devops
 ## Configuração Automática com Ansible
 Os playbooks do Ansible serão responsáveis por configurar cada máquina.
 
-- Common.yml
+- **`common.yml`**
 
-I. Preparação do Sistema
-Aplicar em todos os hosts (hosts: all) com privilégios de root (become: yes).
+1.  Preparação do Sistema
+- Aplicar em todos os hosts (hosts: all) com privilégios de root (become: yes).
+- Atualizar Cache APT e garantir a validade por 1 hora.
+- Executar Upgrade Completo do sistema
 
-Atualizar Cache APT e garantir a validade por 1 hora.
+2. Sincronização e Fuso Horário
+- Instalar o pacote chrony (para sincronização de tempo).
+- Configurar chrony para usar o servidor brasileiro pool.ntp.br e notificar a reinicialização do serviço.
+- Configurar o Fuso Horário do sistema para America/Recife.
 
-Executar Upgrade Completo do sistema (upgrade: dist).
+3. Gerenciamento de Usuários e Sudo
+- Criar o grupo ifpb.
+- Criar usuários ana e anderson:
+- Ambos adicionados aos grupos ifpb e vagrant.
+- Com shell /bin/bash e criação de diretório home.
+- Configurar Sudo: Criar arquivo /etc/sudoers.d/ifpb para permitir que o grupo ifpb execute comandos como root sem senha (NOPASSWD: ALL).
 
+4. Configuração de Segurança SSH
+- Preparar diretórios SSH: Criar /home/ana/.ssh e /home/anderson/.ssh com permissões restritas (0700).
+- Gerar Chaves SSH (2048 bits) para os usuários ana e anderson (armazenadas em .ssh/id_rsa).
+- Reforçar sshd_config (Notificando restart sshd para cada alteração):
+- Desativar autenticação por senha (PasswordAuthentication no).
+- Bloquear acesso direto de root (PermitRootLogin no).
+- Permitir login apenas para usuários dos grupos vagrant e ifpb (AllowGroups vagrant ifpb).
+- Configurar Banner SSH: Criar e configurar o arquivo /etc/issue.net para exibir uma mensagem de boas-vindas/alerta no login.
 
+5. Outras Configurações
+- Instalar cliente NFS (nfs-common) para permitir montagens de compartilhamentos de rede.
 
-II.Sincronização e Fuso Horário
-Instalar o pacote chrony (para sincronização de tempo).
-
-Configurar chrony para usar o servidor brasileiro pool.ntp.br e notificar a reinicialização do serviço.
-
-Configurar o Fuso Horário do sistema para America/Recife.
-
-
-
-III.Gerenciamento de Usuários e Sudo
-Criar o grupo ifpb.
-
-Criar usuários ana e anderson:
-
-Ambos adicionados aos grupos ifpb e vagrant.
-
-Com shell /bin/bash e criação de diretório home.
-
-Configurar Sudo: Criar arquivo /etc/sudoers.d/ifpb para permitir que o grupo ifpb execute comandos como root sem senha (NOPASSWD: ALL).
-
-
-
-IV. Configuração de Segurança SSH
-Preparar diretórios SSH: Criar /home/ana/.ssh e /home/anderson/.ssh com permissões restritas (0700).
-
-Gerar Chaves SSH (2048 bits) para os usuários ana e anderson (armazenadas em .ssh/id_rsa).
-
-Reforçar sshd_config (Notificando restart sshd para cada alteração):
-
-Desativar autenticação por senha (PasswordAuthentication no).
-
-Bloquear acesso direto de root (PermitRootLogin no).
-
-Permitir login apenas para usuários dos grupos vagrant e ifpb (AllowGroups vagrant ifpb).
-
-Configurar Banner SSH: Criar e configurar o arquivo /etc/issue.net para exibir uma mensagem de boas-vindas/alerta no login.
-
-
-
-V. Outras Configurações
-Instalar cliente NFS (nfs-common) para permitir montagens de compartilhamentos de rede.
-
-VI. Manipuladores (Handlers)
-restart chrony: Reinicia o serviço chrony quando a configuração de tempo é alterada.
-
-restart sshd: Reinicia o serviço ssh (SSHD) sempre que as configurações de segurança SSH são alteradas.
+6. Manipuladores (Handlers)
+- restart chrony: Reinicia o serviço chrony quando a configuração de tempo é alterada.
+- restart sshd: Reinicia o serviço ssh (SSHD) sempre que as configurações de segurança SSH são alteradas.
