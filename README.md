@@ -1,4 +1,4 @@
-# Projeto devOps - Infraestrutura como código com Vagrant e Ansible
+# Projeto devOps - Vagrant e Ansible
 
 ## Informações do projeto
 **Disciplina**: Administração de Sistemas Abertos  
