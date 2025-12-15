@@ -26,7 +26,7 @@ dns_forwarders:
 dns_allow_recursion: "192.168.56.0/24"
 dns_allow_query: "192.168.56.0/24"
 
-# Zonas DNS (ADICIONANDO AQUI O QUE ESTAVA FALTANDO)
+# Zonas DNS 
 dns_zones:
   - name: "ana.anderson.devops"
     type: "master"
