@@ -9,10 +9,10 @@
         update_cache: yes
         cache_valid_time: 3600
 
-    - name: Executar upgrade do sistema
-      apt:
-        upgrade: dist
-        update_cache: yes
+   # - name: Executar upgrade do sistema
+   #   apt:
+   #     upgrade: dist
+   #     update_cache: yes
 
     - name: Instalar pacote chrony
       apt:
