@@ -72,7 +72,7 @@
 
     - name: Pegar chave pública da máquina e levar para usuário "Anderson" 
       ansible.posix.authorized_key:
-        user: ana
+        user: anderson
         state: present
         key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
 
