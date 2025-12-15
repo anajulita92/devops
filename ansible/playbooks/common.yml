@@ -50,22 +50,6 @@
         shell: /bin/bash
         create_home: yes
 
-    - name: Criar diretório .ssh para ana
-      file:
-        path: /home/ana/.ssh
-        state: directory
-        mode: '0700'
-        owner: ana
-        group: ana
-
-    - name: Criar diretório .ssh para anderson
-      file:
-        path: /home/anderson/.ssh
-        state: directory
-        mode: '0700'
-        owner: anderson
-        group: anderson
-
     - name: Gerar chave SSH para usuário ana
       user:
         name: ana
@@ -79,6 +63,18 @@
         generate_ssh_key: yes
         ssh_key_bits: 2048
         ssh_key_file: ".ssh/id_rsa"
+
+    - name: Pegar chave pública da máquina e levar para usuário "Ana" 
+      ansible.posix.authorized_key:
+        user: ana
+        state: present
+        key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+
+    - name: Pegar chave pública da máquina e levar para usuário "Anderson" 
+      ansible.posix.authorized_key:
+        user: ana
+        state: present
+        key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
 
     - name: Configurar SSH para permitir apenas autenticação por chaves
       lineinfile:
